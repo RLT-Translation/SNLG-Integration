@@ -7,11 +7,11 @@ import java.util.*;
 
 public class Driver {
 	
-	public static int getGroupId(String inlet, int startIndex) {
+	public static String getGroupIdstr(String inlet, int startIndex) {
 		int openParenOccur = inlet.indexOf('(', startIndex);
 		int closeParenOccur = inlet.indexOf(')', startIndex);
 		String groupIdstr = inlet.substring(openParenOccur+1, closeParenOccur);
-		return Integer.parseInt(groupIdstr);
+		return groupIdstr;
 	}
 
 	public static void main(String[] args) {
@@ -21,7 +21,7 @@ public class Driver {
 		Realiser realiser = new Realiser(lexicon);
 		
 		// Mix of Java and Python code to generate grammatical English sentences
-		Map<Integer, ArrayList> map = new HashMap<Integer, ArrayList>();
+		Map<Integer, PhraseGroup> map = new HashMap<Integer, PhraseGroup>();
 		Stack<Integer> bracks = new Stack<Integer>();
 		
 		int nestCounter = 0;
@@ -45,20 +45,27 @@ public class Driver {
 				int openBrackIndex = bracks.pop();
 				String insideBracks = input.substring(openBrackIndex, i-1);
 				
-				int groupId = getGroupId(input, openBrackIndex);
+				String groupIdstr = getGroupIdstr(input, openBrackIndex);
+				int groupId = Integer.parseInt(groupIdstr);
 				
 				PhraseGroup pg = new PhraseGroup(tokenType, groupId);
 				
 				String[] tokens = insideBracks.split(" ");
 				for (int j = 0; j < tokens.length; j++) {
 					if (tokens[j].charAt(0) == '[') {
-						int innerGroupId = getGroupId(tokens[j], 0);
+						int innerGroupId = Integer.parseInt(getGroupIdstr(tokens[j], 0));
 						pg.addComponentChild(innerGroupId);
 					}
 					else {
 						pg.addComponentToken(tokens[i]);
 					}
 				}
+				map.put(groupId, pg);
+				
+				// Replace contents of brackets with [(groupId)]
+				String firstPart = input.substring(openBrackIndex, openBrackIndex+3+groupIdstr.length());
+				String secondPart = input.substring(i, input.length());
+				input = firstPart + secondPart;
 				
 				justSeenClose = false;
 
