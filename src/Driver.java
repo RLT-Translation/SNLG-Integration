@@ -15,64 +15,79 @@ public class Driver {
 	}
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		Lexicon lexicon = Lexicon.getDefaultLexicon();
 		NLGFactory nlgFactory = new NLGFactory(lexicon);
 		Realiser realiser = new Realiser(lexicon);
 		
-		// Mix of Java and Python code to generate grammatical English sentences
-		Map<Integer, PhraseGroup> map = new HashMap<Integer, PhraseGroup>();
-		Stack<Integer> bracks = new Stack<Integer>();
+		Map<PhraseFunc, PhraseGroup> map = new HashMap<PhraseFunc, PhraseGroup>();
 		
+		/*
+		Stack<Integer> bracks = new Stack<Integer>();
 		int nestCounter = 0;
 		boolean justSeenClose = false;
+		if (input.charAt(i) == '[') {
+			nestCounter += 1;
+			bracks.push(i);
+		}
+		else if (input.charAt(i) == ']') {
+			nestCounter -= 1;
+			justSeenClose = true;
+		}
+		*/
+		
 		String input = args[0];
-		for (int i = 0; i < input.length(); i++) {
-			if (input.charAt(i) == '[') {
-				nestCounter += 1;
-				bracks.push(i);
-			}
-			else if (input.charAt(i) == ']') {
-				nestCounter -= 1;
-				justSeenClose = true;
+		String[] groups = input.split("@");
+		System.out.println("Input: " + input);
+		System.out.println("Groups length: " + groups.length);
+		
+		for (int i = 0; i < groups.length; i++) {
+			String curGroup = groups[i];
+			System.out.println("Cur group: " + curGroup);
+			
+			int openBrackIndex = curGroup.indexOf('[');
+			int closeBrackIndex = curGroup.indexOf(']');
+			
+			String insideBracks = curGroup.substring(openBrackIndex+1, closeBrackIndex);
+			
+			int openBraceOccur = curGroup.indexOf('{', closeBrackIndex);
+			int closeBraceOccur = curGroup.indexOf('}', closeBrackIndex);
+			String strPhraseFunc = curGroup.substring(openBraceOccur+1, closeBraceOccur);
+			
+			PhraseFunc phraseFunc = null;
+			switch (strPhraseFunc) {
+				case "S":
+					phraseFunc = PhraseFunc.SUBJFUNC;
+					break;
+				case "O":
+					phraseFunc = PhraseFunc.OBJFUNC;
+					break;
+				case "V":
+					phraseFunc = PhraseFunc.VERBFUNC;
+					break;
 			}
 			
-			if (justSeenClose) {
-				int openBraceOccur = input.indexOf('{', i);
-				int closeBraceOccur = input.indexOf('}', i);
-				String tokenType = input.substring(openBraceOccur+1, closeBraceOccur);
-				
-				int openBrackIndex = bracks.pop();
-				String insideBracks = input.substring(openBrackIndex, i-1);
-				
-				String groupIdstr = getGroupIdstr(input, openBrackIndex);
-				int groupId = Integer.parseInt(groupIdstr);
-				
-				PhraseGroup pg = new PhraseGroup(tokenType, groupId);
-				
-				String[] tokens = insideBracks.split(" ");
-				for (int j = 0; j < tokens.length; j++) {
-					if (tokens[j].charAt(0) == '[') {
-						int innerGroupId = Integer.parseInt(getGroupIdstr(tokens[j], 0));
-						pg.addComponentChild(innerGroupId);
-					}
-					else {
-						pg.addComponentToken(tokens[i]);
-					}
-				}
-				map.put(groupId, pg);
-				
-				// Replace contents of brackets with [(groupId)]
-				String firstPart = input.substring(openBrackIndex, openBrackIndex+3+groupIdstr.length());
-				String secondPart = input.substring(i, input.length());
-				input = firstPart + secondPart;
-				
-				justSeenClose = false;
-
-				i += (closeBraceOccur - openBraceOccur);
-			}
+			PhraseGroup pg = new PhraseGroup(phraseFunc, insideBracks);
+			map.put(phraseFunc, pg);
 		}
-
+		
+		for (PhraseFunc pf : map.keySet()) {
+			PhraseGroup pg = map.get(pf);
+			pg.printSelf();
+		}
+		
+		/*
+		SPhraseSpec sentence = nlgFactory.createClause();
+		NPPhraseSpec subj = (NPPhraseSpec) map.get(PhraseFunc.SUBJFUNC).getPhrase();
+		VPPhraseSpec verb = (VPPhraseSpec) map.get(PhraseFunc.VERBFUNC).getPhrase();
+		NPPhraseSpec obj = (NPPhraseSpec) map.get(PhraseFunc.OBJFUNC).getPhrase();
+		
+		sentence.setSubject(subj);
+		sentence.setVerb(verb);
+		sentence.setObject(obj);
+		
+		String output = realiser.realiseSentence(sentence);
+		System.out.println(output);
+		*/
 
 	}
 
