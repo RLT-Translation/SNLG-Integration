@@ -14,6 +14,7 @@ public class Driver {
 		return groupIdstr;
 	}
 
+	@SuppressWarnings("incomplete-switch")
 	public static void main(String[] args) {
 		Lexicon lexicon = Lexicon.getDefaultLexicon();
 		NLGFactory nlgFactory = new NLGFactory(lexicon);
@@ -64,6 +65,9 @@ public class Driver {
 				case "V":
 					phraseFunc = PhraseFunc.VERBFUNC;
 					break;
+				case "IO":
+					phraseFunc = PhraseFunc.INDOBJFUNC;
+					break;
 			}
 			
 			PhraseGroup pg = new PhraseGroup(phraseFunc, insideBracks);
@@ -74,6 +78,35 @@ public class Driver {
 			PhraseGroup pg = map.get(pf);
 			pg.printSelf();
 		}
+		
+		// TODO: deal with multiple subjects, objects, and clauses
+		
+		SPhraseSpec clause = nlgFactory.createClause();
+		for (PhraseFunc pf : map.keySet()) {
+			PhraseGroup pg = map.get(pf);
+			switch (pf) {
+			case OBJFUNC:
+				NPPhraseSpec onp = (NPPhraseSpec) pg.getPhraseSpec();
+				clause.setObject(onp);
+				break;
+			case INDOBJFUNC:
+				NPPhraseSpec ionp = (NPPhraseSpec) pg.getPhraseSpec();
+				clause.setIndirectObject(ionp);
+				break;
+			case VERBFUNC:
+				VPPhraseSpec vp = (VPPhraseSpec) pg.getPhraseSpec();
+				// TODO: check if setverb instead
+				clause.setVerbPhrase(vp);
+				break;
+			case SUBJFUNC:
+				NPPhraseSpec snp = (NPPhraseSpec) pg.getPhraseSpec();
+				clause.setSubject(snp);
+				break;
+			}
+		}
+		
+		String output = realiser.realiseSentence(clause);
+	    System.out.println(output);
 		
 		/*
 		SPhraseSpec sentence = nlgFactory.createClause();

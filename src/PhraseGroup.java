@@ -94,6 +94,80 @@ public class PhraseGroup {
 		}
 	}
 	
+	@SuppressWarnings("incomplete-switch")
+	public PhraseElement getPhraseSpec() {
+		PhraseElement pe = null;
+		switch (this.phraseFunc) {
+			case SUBJFUNC:
+			case OBJFUNC:
+			case INDOBJFUNC:
+				NPPhraseSpec np = nlgFactory.createNounPhrase();
+				for (PhraseType pt : this.tokenMap.keySet()) {
+					Map<Integer, PhraseToken> innerMap = this.tokenMap.get(pt);
+					for (Integer index : innerMap.keySet()) {
+						PhraseToken pTok = innerMap.get(index);
+						VPPhraseSpec vpmod = null;
+						AdvPhraseSpec advmod = null;
+						switch (pt) {
+							case VPPT:
+								vpmod = (VPPhraseSpec) pTok.getPhraseElement();
+								break;
+							case NPPT:
+								NPPhraseSpec npmod = (NPPhraseSpec) pTok.getPhraseElement();
+								np.setNoun(npmod);
+								break;
+							case PPPT:
+								PPPhraseSpec ppmod = (PPPhraseSpec) pTok.getPhraseElement();
+								np.setComplement(ppmod);
+							case ADJPT:
+								AdjPhraseSpec adjmod = (AdjPhraseSpec) pTok.getPhraseElement();
+								np.addPreModifier(adjmod);
+							case ADVPT:
+								advmod = (AdvPhraseSpec) pTok.getPhraseElement();
+								break;
+						}
+						if (vpmod != null) {
+							if (advmod != null) {
+								vpmod.addPreModifier(advmod);
+							}
+							np.addComplement(vpmod);
+						}
+					}
+				}
+				pe = np;
+				break;
+			case VERBFUNC:
+				VPPhraseSpec vp = nlgFactory.createVerbPhrase();
+				for (PhraseType pt : this.tokenMap.keySet()) {
+					Map<Integer, PhraseToken> innerMap = this.tokenMap.get(pt);
+					for (Integer index : innerMap.keySet()) {
+						PhraseToken pTok = innerMap.get(index);
+						switch (pt) {
+							case VPPT:
+								VPPhraseSpec vpmod = (VPPhraseSpec) pTok.getPhraseElement();
+								vp.setVerb(vpmod);
+								break;
+							case PPPT:
+								PPPhraseSpec ppmod = (PPPhraseSpec) pTok.getPhraseElement();
+								vp.setComplement(ppmod);
+							case ADVPT:
+								AdvPhraseSpec advmod = (AdvPhraseSpec) pTok.getPhraseElement();
+								vp.addPreModifier(advmod);
+								break;
+						}
+					}
+				}
+				pe = vp;
+				break;
+		}
+		
+		return pe;
+	}
+	
+	
+	public PhraseFunc getPhraseFunc() {
+		return this.phraseFunc;
+	}
 	public void printSelf() {
 		System.out.println("Phrase group function: " + this.phraseFunc);
 		for (PhraseType pt : this.tokenMap.keySet()) {
