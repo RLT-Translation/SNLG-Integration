@@ -6,10 +6,17 @@ public enum FeatureTag {
     
     SING (FeatureGroup.NumberType),
     PLURAL (FeatureGroup.NumberType),
+    
+    REG (FeatureGroup.NounModType),
+    PROP (FeatureGroup.NounModType),
+    PRO (FeatureGroup.NounModType),
 	
-	PASSIVE (FeatureGroup.VerbModType),
-	PERFECT (FeatureGroup.VerbModType),
-	PROGRESSIVE (FeatureGroup.VerbModType);
+	PLAIN (FeatureGroup.VerbModType),
+	PROGRESSIVE (FeatureGroup.VerbModType),
+	
+	UNMOD(FeatureGroup.CompModType),
+	COMP (FeatureGroup.CompModType),
+	SUP (FeatureGroup.CompModType);
 
     private FeatureGroup group;
 
@@ -28,6 +35,8 @@ public enum FeatureTag {
     public enum FeatureGroup {
         TenseType,
         NumberType,
-        VerbModType
+        VerbModType,
+        CompModType,
+        NounModType
     }
 }
